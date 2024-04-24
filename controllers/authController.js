@@ -1,12 +1,15 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { User } = require('../models/userModel');
+const { Contact } = require('../models/contactModel');
 
 async function register(req, res) {
   try {
     const { name, phoneNumber, password, email } = req.body;
     const hashedPassword = await bcrypt.hash(password, 10);
     const user = await User.create({ name, phoneNumber, email, password: hashedPassword });
+    const contact = await Contact.create({ name, phoneNumber, email });
+
     res.status(201).json(user);
   } catch (error) {
     res.status(400).json({ error: error.message });
