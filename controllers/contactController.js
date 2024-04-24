@@ -1,6 +1,7 @@
 
 const { Contact } = require('../models/contactModel');
-
+const { User } = require('../models/userModel');
+const { Op } = require('sequelize');
 
 async function markSpam(req, res) {
   const { phoneNumber } = req.body;
@@ -43,7 +44,11 @@ async function searchName(req, res) {
     const contact_start = await Contact.findAll({ where: { name: { [Op.startsWith]: name } } });
     const contact_contain = await Contact.findAll({ where: { name: { [Op.substring]: name, [Op.not]: `%${name}%` } } });
 
-    const response = [...contact_start, ...contact_contain];
+    const contactStartNames = new Set(contact_start.map(contact => contact.name));
+
+    const filteredContactContain = contact_contain.filter(contact => !contactStartNames.has(contact.name));
+
+    const response = [...contact_start, ...filteredContactContain];
 
     return res.status(200).json(response);
   } catch (error) {
